@@ -277,6 +277,46 @@ function! cmake4vim#RunTarget(bang, ...) abort
     endif
 endfunction
 
+function! cmake4vim#RunTargetFromBuildDir(bang, ...) abort
+    if empty( g:cmake_build_target )
+        call utils#common#Warning('Please select target first!')
+        return
+    endif
+
+    let l:args = a:000
+    if empty(l:args) && !a:bang
+        let l:old_conf = utils#config#vimspector#getTargetConfig(g:cmake_build_target)
+        let l:args = l:old_conf['args']
+    endif
+
+    let l:build_dir = utils#cmake#findBuildDir()
+    if l:build_dir ==# ''
+        call utils#common#Warning('CMake project was not found!')
+        return
+    endif
+    let l:cw_dir = getcwd()
+    silent exec 'cd' l:build_dir
+    let l:exec_path = ''
+    if has('win32')
+        let l:exec_path = g:cmake_build_target . '.exe'
+    else
+        let l:exec_path = g:cmake_build_target
+    endif
+    let l:exec_path = findfile(l:exec_path, '**')
+    silent exec 'cd' l:cw_dir
+
+    let l:build_command = cmake4vim#SelectTarget(g:cmake_build_target)
+    let l:conf = { g:cmake_build_target : { 'app': l:exec_path, 'args': l:args } }
+
+    if strlen(l:exec_path)
+        call utils#common#executeCommands([l:build_command, 'cd ' . l:build_dir, join([utils#fs#fnameescape(l:exec_path)] + l:args, ' ')], 1)
+        call utils#config#vimspector#updateConfig(l:conf)
+    else
+        let v:errmsg = 'Executable "' . g:cmake_build_target . '" was not found'
+        call utils#common#Warning(v:errmsg)
+    endif
+endfunction
+
 " Complete CCMake window modes
 function! cmake4vim#CompleteCCMakeModes(arg_lead, cmd_line, cursor_pos) abort
     let l:modes = ['hsplit', 'vsplit', 'tab']
