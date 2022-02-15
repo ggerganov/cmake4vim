@@ -283,6 +283,10 @@ function! cmake4vim#RunTargetFromBuildDir(bang, ...) abort
         return
     endif
 
+    " Assign argument list as string separated by spaces
+    " This can be used to restore the arguments used in the last run
+    let g:cmake_run_last_args = join( a:000, ' ' )
+
     let l:args = a:000
     if empty(l:args) && !a:bang
         let l:old_conf = utils#config#vimspector#getTargetConfig(g:cmake_build_target)
