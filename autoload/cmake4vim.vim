@@ -313,7 +313,7 @@ function! cmake4vim#RunTargetFromBuildDir(bang, ...) abort
     let l:conf = { g:cmake_build_target : { 'app': l:exec_path, 'args': l:args } }
 
     if strlen(l:exec_path)
-        call utils#common#executeCommands([l:build_command, 'cd ' . l:build_dir, join([utils#fs#fnameescape(l:exec_path)] + l:args, ' ')], 1)
+        call utils#common#executeCommands([l:build_command, 'cd ' . l:build_dir, join([utils#fs#fnameescape('./' . l:exec_path)] + l:args, ' ')], 1)
         call utils#config#vimspector#updateConfig(l:conf)
     else
         let v:errmsg = 'Executable "' . g:cmake_build_target . '" was not found'
